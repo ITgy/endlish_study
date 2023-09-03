@@ -1,0 +1,3 @@
+
+        export const dataSource = [{"text":"Lesson 1","start":0.61,"end":2.71},{"text":"Excuse me!","start":2.71,"end":5.61},{"text":"Listen to the tape then answer this question.","start":5.61,"end":10.8},{"text":"Whose handbag is it?","start":10.8,"end":15.11},{"text":"Excuse me!","start":15.11,"end":16.66},{"text":"Yes?","start":16.66,"end":18.26},{"text":"Is this your handbag?","start":18.26,"end":21.44},{"text":"Pardon?","start":21.44,"end":23.17},{"text":"Is this your handbag?","start":23.17,"end":26.73},{"text":"Yes it is.","start":26.73,"end":29.49}];
+    

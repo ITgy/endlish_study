@@ -1,0 +1,3 @@
+
+        export const dataSource = [{"text":"Lesson 21","start":0.35,"end":2.87},{"text":"Which book?","start":2.87,"end":5.43},{"text":"Listen to the tape then answer this question.","start":5.43,"end":11.53},{"text":"Which book does the man want?","start":11.53,"end":16.7},{"text":"Give me a book please, Jane.","start":16.7,"end":20.22},{"text":"Which book?","start":20.22,"end":21.83},{"text":"This one?","start":21.83,"end":24.33},{"text":"No, not that one. The red one.","start":24.33,"end":29.44},{"text":"This one?","start":29.44,"end":30.97},{"text":"Yes, please.","start":30.97,"end":32.78},{"text":"Here you are.","start":32.78,"end":34.81}];
+    

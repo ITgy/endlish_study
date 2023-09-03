@@ -1,39 +1,23 @@
 <script setup>
-import { ref } from "vue";
 const props = defineProps({
   line: {
     type: Object,
     default: () => {},
   },
-  light: {
-    type: Boolean,
-    default: false
-  },
-  loop: {
-    type: Boolean,
-    default: false
-  },
-  show: {
-    type: Boolean,
-    default: true
-  },
-  voice: {
-    type: Boolean,
-    default: false
-  }
 });
+
 </script>
 <template>
-  <div class="line" :class="light ? 'light' : ''">
-    <div class="line_content" :class="show ? '' : 'mask'">
-      {{ line.text }}
+  <div class="line" :class="line.value.light ? 'light' : ''">
+    <div class="line_content" :class="line.value.show ? '' : 'mask'">
+      {{ line.value.text }}
     </div>
     <div class="line_operate">
-      <span @click="$emit('handleLoop')">单</span>
-      <span @click="$emit('handleShow')">{{
-        show ? "显" : "隐"
+      <span @click="$emit('handleLoop', line.value.text)">单</span>
+      <span @click="$emit('handleShow', line.value.start)">{{
+        line.value.show ? "显" : "隐"
       }}</span>
-      <span @click="$emit('voice')">读</span>
+      <span @click="$emit('voice', line.value.text)">读</span>
     </div>
   </div>
 </template>
@@ -78,7 +62,6 @@ const props = defineProps({
   }
 }
 .light {
-  border: 1px solid lightcoral;
   .line_content {
     color: burlywood;
   }

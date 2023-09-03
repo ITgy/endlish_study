@@ -1,0 +1,3 @@
+
+        export const dataSource = [{"text":"Lesson 23","start":0.42,"end":2.92},{"text":"Which glasses?","start":2.92,"end":5.64},{"text":"Listen to the tape then answer this question.","start":5.64,"end":11.83},{"text":"Which glasses does the man want?","start":11.83,"end":17.14},{"text":"Give me some glasses please, Jane.","start":17.14,"end":21.18},{"text":"Which glasses?","start":21.18,"end":23.28},{"text":"These glasses?","start":23.28,"end":25.83},{"text":"No, not those.","start":25.83,"end":28.58},{"text":"The ones on the shelf.","start":28.58,"end":31.4},{"text":"These?","start":31.4,"end":32.84},{"text":"Yes, please.","start":32.84,"end":34.98},{"text":"Here you are.","start":34.98,"end":37.13}];
+    

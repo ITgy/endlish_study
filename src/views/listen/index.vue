@@ -1,100 +1,73 @@
 <script setup>
-import Line from './components/line.vue';
+import { handleLoop, handleShow, handleTouchStart, handleTouchMove, handleTouchEnd } from './event';
+import { handleTimeupdate, handleRePlay, handleMode } from './event';
+import { computeScrollInnerInitTop, initData } from './base';
 import { ref, onMounted } from 'vue';
+import {getAudioList} from './base';
+// import { dataSource } from './source.js';
 
-const dataSource = [
-  {
-    text: "Lesson 1",
-    time: 0.61
-  },
-  {
-    text: "Excuse me!",
-    time: 0.61
-  },
-  {
-    text: "Listen to the tape then answer this question.",
-    time: 5.61
-  },
-  {
-    text: "Whose handbag is it?",
-    time: 10.8
-  },
-  {
-    text: "Excuse me!",
-    time: 15.11
-  },
-  {
-    text: "Yes?",
-    time: 16.66
-  },
-  {
-    text: "Is this your handbag?",
-    time: 18.26
-  },
-  {
-    text: "Pardon?",
-    time: 21.44
-  },
-  {
-    text: "Is this your handbag?",
-    time: 23.17
-  },
-  {
-    text: "Yes it is.",
-    time: 26.73
-  },
-  {
-    text: "Thank you very much.",
-    time: 29.49
-  },
-];
+// 导入组件
+import Line from './components/line/index.vue';
+import Control from './components/control/index.vue';
 
-// 获取当前滚动容器DOM对象
-const scrollWrap = ref(null);
+const scrollWrap = ref(null);// 获取当前滚动容器DOM对象
+const normalizeData = ref(initData(getAudioList()[0]));// 初始化数据
 
-onMounted(() => {
-    console.log('scrollWrap', scrollWrap.value.clientHeight)
-    const scrollWrapHeight = scrollWrap.value.clientHeight;
-    
+// 初始滚动位置的样式
+const initStyle = ref({
+  top: 0
+})
+// 实时滚动样式
+const translateStyle = ref({
+  transform: 'translateY(0px)',
+  transition: 'all 0.5s'
 })
 
+onMounted(() => {
+  // 获取滚动容器高度
+  const scrollWrapHeight = scrollWrap.value.clientHeight;
+  // 文章内容初始高度
+  initStyle.value.top = computeScrollInnerInitTop(scrollWrapHeight);
+})
 
-
-/**** start 单行控制相关事件方法 ****/
-// 是否开启单行循环
-function handleLoop(){
-
+function handleSelectAudio(audio){
+  normalizeData.value = initData(audio);
 }
-
-// 是否显示
-function handleShow(){
-
-}
-/**** end 单行控制相关事件方法 ****/
-/**** start 逻辑方法 ****/
-// 字幕滚动模式一：自动计算当前高亮行是否超出显示区域，如果超出了移动字幕保证高亮在字幕内
-function processScrollEnd(){
-
-}
-// 字幕滚动模式二：自动计算当前高亮行是否超过显示区域的中点(“中”心的“中”)，如果超出了移动字幕保证高亮在字幕内
-function processScrollMiddle(){
-    // 计算当前滚动容器的高度
-
-}
-/**** end 逻辑方法 ****/
-
 </script>
+
 <template>
-    <div class="scroll_wrap">
-        <ul class="scroll_inner" ref="scrollWrap">
-            <Line v-for="line in dataSource" :key="line.time" :line="line" @handleLoop="handleLoop" @handleShow="handleShow"></Line>
-        </ul>
-    </div>
+  <div class="scroll_wrap" ref="scrollWrap" @touchstart="handleTouchStart($event, translateStyle)"
+    @touchmove="handleTouchMove($event, translateStyle)" @touchend="handleTouchEnd($event, translateStyle)">
+    <ul class="scroll_inner" :style="[initStyle, translateStyle]">
+      <Line v-for="line in normalizeData" :key="line.start" :line="line" @handleLoop="handleLoop"
+        @handleShow="handleShow(normalizeData, $event)">
+      </Line>
+    </ul>
+  </div>
+  <Control :normalizeData="normalizeData" @handleMode="handleMode"
+    @handleRePlay="handleRePlay(normalizeData, translateStyle)"
+    @handleTimeupdate="handleTimeupdate(normalizeData, translateStyle, $event)"
+    @handleSelect="handleSelectAudio"></Control>
 </template>
+
 <style scoped lang="scss">
 .scroll_wrap {
-    height: 200px;
-    border: 1px solid #b12600;
-    overflow: auto;
+  height: calc(100% - 70px);
+  overflow: hidden;
+  position: relative;
+
+  .scroll_inner {
+    width: 100%;
+    position: absolute;
+    left: 0;
+  }
+}
+
+.control {
+  height: 50px;
+  border: 1px solid red;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 </style>

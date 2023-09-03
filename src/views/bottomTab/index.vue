@@ -4,7 +4,7 @@ import {useRouter} from 'vue-router';
 
 const router = useRouter();
 
-const current = ref(1);
+const current = ref(2);
 const tabList = ref([{
     id: 1,
     label: '背单词',

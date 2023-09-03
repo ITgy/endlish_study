@@ -4,19 +4,29 @@ import bottomTab from './views/bottomTab/index.vue';
 </script>
 
 <template>
-  <main >
-    <RouterView />
-  </main>
-  <footer>
-    <bottomTab></bottomTab>
-  </footer>
+  <div id="container" class="container">
+    <main>
+      <RouterView />
+    </main>
+    <footer>
+      <bottomTab></bottomTab>
+    </footer>
+  </div>
 </template>
 
-<style scoped>
-main {
-  height: calc(100vh - 50px);
-}
-footer {
-  height: 50px;
+<style scoped lang="scss">
+.container {
+  height: 100vh;
+  width: 100vw;
+  background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+
+  main {
+    height: calc(100vh - 50px);
+    overflow: hidden;
+  }
+
+  footer {
+    height: 50px;
+  }
 }
 </style>
