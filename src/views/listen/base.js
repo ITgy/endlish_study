@@ -38,19 +38,13 @@ export function initData(data) {
     return obj;
 }
 
-
-function formatAudioTime(time){
-    const str = time.toString().split(".");
-    return `${str[0].padStart(2,'0')}.00}`
-}
-
 /**
  * 根据当前时间计算文章滚动位置
  * @param {*} time 
  */
-export function locationArticle(normalizeData = [], time = "00.00"){
+export function locationArticle(normalizeData = [], time = 0){
     const curInd = normalizeData.findIndex(item => {
-        return formatAudioTime(item.value.start) === formatAudioTime(time);
+        return time >= item.value.start && time < item.value.end
     })
 
     if(curInd !== -1){
@@ -78,8 +72,8 @@ function updateLightStatus(normalizeData = [], curInd = 0){
 /**
  * 控制页面文章显示效果
  */
-export function controlArticleShow(normalizeData, translateStyle, count = 0){
-    const transY = locationArticle(normalizeData, count)
+export function controlArticleShow(normalizeData, translateStyle, time = 0){
+    const transY = locationArticle(normalizeData, time)
     if(transY !== -1){
       translateStyle.transform = `translateY(${-transY}px)`;
     }
@@ -96,7 +90,6 @@ export function getAudioList(){
         eager: true
     });
 
-    console.log('importAudios',importAudios)
     const audioList = Object.keys(importAudios).map(key => {
         let temp = key.split('/');
         return {

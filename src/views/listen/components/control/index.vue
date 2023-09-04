@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { getAudioList } from '../../base';
 
 const emit = defineEmits(['handlePlay', 'handleRePlay', 'handleTimeupdate', 'handleSelect'])
@@ -7,28 +7,48 @@ const props = defineProps({
     normalizeData: {
         type: Array,
         default: () => []
+    },
+    setCurrentTime: {
+        type: Number,
+        default: 0
+    }
+})
+watch(() => props.setCurrentTime, (newValue) => {
+    audio.value.currentTime = newValue;
+    if (!isPlay.value) {
+        controlPlay(true)
     }
 })
 
 const percent = ref(0); // 播放进度百分比
 const isPlay = ref(false); // 是否正在播放中
 const isFixLine = ref(false); // 控制是否开启行循环
-const mode = ref('single') // 当前播放模式
 const audio = ref(null); // 播放器DOM对象
 const duration = ref(0); // 音频总时长
 const currentTime = ref(0); // 播放进度倒计时
 const currentPlayLine = ref({}); // 当前播放的行
-const nextPlayLine = ref({});// 当前播放行的下一行
 const isListShow = ref(false); // 是否显示音频列表
+const currentMode = ref(0); // 当前播放模式
 
 // 播放模式列表
-const PLAY_MODE = {
-    single: '单曲',
-    sequence: '顺序',
-    loop: '循环'
-}
+const PLAY_MODE = ['单曲', '顺序', '循环'];
 const audioList = getAudioList();
 const initialAudio = audioList[0].imported.default; // 初始音频
+
+/**
+ * 控制音频的播放和暂停
+ * @param {Boolean} value true为播放，false为暂停 
+ */
+function controlPlay(value) {
+    if (value) {
+        audio.value.play();
+        isPlay.value = true;
+    } else {
+        audio.value.pause();
+        isPlay.value = false;
+    }
+
+}
 
 /**
  * 当音频加载完成可以播放了出发该事件
@@ -45,7 +65,7 @@ function handleTimeupdate() {
      * 这里如果仅判断当前播放时间小于下一行开始时间，会出现短暂进入下一行然后再回到当前行重头播放的问题
      * 解决方案：比对下一行开始时间时减去1s
      */
-    if (isFixLine.value && (!nextPlayLine.value || audio.value.currentTime >= currentPlayLine.value.end - 1)) {
+    if (isFixLine.value && (audio.value.currentTime >= currentPlayLine.value.end - 1)) {
         audio.value.currentTime = currentPlayLine.value.start;
         percent.value = Math.floor(currentPlayLine.value.start) / audio.value.duration * 100;
         currentTime.value = currentPlayLine.value.start;
@@ -60,11 +80,9 @@ function handleTimeupdate() {
 // 播放/暂停 点击事件
 function handlePlay() {
     if (isPlay.value) {
-        audio.value.pause();
-        isPlay.value = false;
+        controlPlay(false);
     } else {
-        audio.value.play();
-        isPlay.value = true;
+        controlPlay(true);
     }
 
     emit('handlePlay', status)
@@ -78,11 +96,15 @@ function handleReplay() {
 
 // 播放结束触发事件
 function handleEnded() {
-    switch (mode.value) {
-        case "single":
+    switch (currentMode.value) {
+        case 0:
             audio.value.currentTime = 0;
-            audio.value.play();
+            controlPlay(true);
             break;
+        case 1:
+            
+        case 2:
+
         default:
 
     }
@@ -111,19 +133,64 @@ function handleReplayLine() {
 
 }
 
-function handleShowPopup() {
-    isListShow.value = true;
+/**
+ * 控制音频列表是否显示
+ */
+function handleControlPopup(value) {
+    isListShow.value = value;
 }
 
-function handleClosePopup(){
-    isListShow.value = false;
-}
-
-async function handleSelect(item){
+/**
+ * 从音频列表中选择一项
+ * @param {*} item 选中的音频对象
+ */
+async function handleSelect(item) {
     audio.value.src = item.imported.default;
     emit('handleSelect', item);
     isListShow.value = false;
-    audio.value.play();
+    controlPlay(true);
+}
+
+/**
+ * 切换模式点击事件
+ */
+function handleMode(){
+    currentMode.value = (currentMode.value + 1) % 3;
+}
+
+/**
+ * 点击进度条事件
+ * @param {*} event 事件对象 
+ */
+function handleTouchstartProgressBar(event) {
+    controlProgressBar(event);
+}
+
+
+/**
+ * 拖动进度条事件
+ * @param {*} event 事件对象 
+ */
+function handleTouchmoveProgressBar(event){
+    // console.log('event', event)
+    // const touch = event.changeTouches[0];
+    // console.log('touch', touch)
+    // controlProgressBar(event);
+}
+
+/**
+ * 进度条控制器
+ * @param {*} event 事件对象 
+ */
+function controlProgressBar(event){
+    let playTime = 0;
+    if (event.target.className === 'progress_bar_inner') {
+        playTime = event.offsetX / event.target.parentNode.clientWidth * duration.value;
+    }
+    if (event.target.className === 'progress_bar') {
+        playTime = event.offsetX / event.target.clientWidth * duration.value;
+    }
+    audio.value.currentTime = playTime;
 }
 
 </script>
@@ -136,7 +203,7 @@ async function handleSelect(item){
                     <div class="name">{{ item.name }}</div>
                 </li>
             </ul>
-            <div class="list_wrap_footer" @click="handleClosePopup">
+            <div class="list_wrap_footer" @click="handleControlPopup(false)">
                 关闭
             </div>
         </div>
@@ -145,36 +212,39 @@ async function handleSelect(item){
         @canplaythrough="handleCanplaythrough"></audio>
     <div class="progress">
         <span>{{ formatShowTime(currentTime) }}</span>
-        <div class="progress_bar">
+        <div class="progress_bar" @click="handleTouchstartProgressBar" @touchmove="handleTouchmoveProgressBar">
             <div class="progress_bar_inner" :style="`width:${percent}%`"></div>
         </div>
         <span>{{ formatShowTime(duration) }}</span>
     </div>
     <div class="control">
-        <div class="playMode" @click="$emit('handleMode')">{{ PLAY_MODE[mode] }}</div>
+        <div class="playMode" @click="handleMode">{{ PLAY_MODE[currentMode] }}</div>
         <div class="replayLine" :class="isFixLine ? 'light' : ''" @click="handleReplayLine">重行</div>
         <div class="play" @click="handlePlay">{{ isPlay ? '暂停' : '播放' }}</div>
         <div class="replay" @click="handleReplay">重播</div>
-        <div class="list" @click="handleShowPopup">列表</div>
+        <div class="list" @click="handleControlPopup(true)">列表</div>
     </div>
 </template>
 <style scoped lang="scss">
 .list_wrap {
     width: 50vw;
     height: 100vh;
+
     ul {
         height: calc(100% - 52px);
         padding: 0 16px;
         overflow: auto;
+
         li {
             height: 40px;
             line-height: 40px;
         }
 
-        li + li {
+        li+li {
             border-top: 1px solid #f1f3f5;
         }
     }
+
     .list_wrap_footer {
         height: 50px;
         line-height: 50px;
@@ -227,5 +297,4 @@ async function handleSelect(item){
     .light {
         color: #66d9e8;
     }
-}
-</style>
+}</style>

@@ -9,7 +9,7 @@ const props = defineProps({
 </script>
 <template>
   <div class="line" :class="line.value.light ? 'light' : ''">
-    <div class="line_content" :class="line.value.show ? '' : 'mask'">
+    <div class="line_content" :class="line.value.show ? '' : 'mask'" @click="$emit('handleSelectLine', line.value.start)">
       {{ line.value.text }}
     </div>
     <div class="line_operate">

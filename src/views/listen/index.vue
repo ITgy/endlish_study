@@ -2,16 +2,16 @@
 import { handleLoop, handleShow, handleTouchStart, handleTouchMove, handleTouchEnd } from './event';
 import { handleTimeupdate, handleRePlay, handleMode } from './event';
 import { computeScrollInnerInitTop, initData } from './base';
-import { ref, onMounted } from 'vue';
+import {reactive, ref, onMounted } from 'vue';
 import {getAudioList} from './base';
-// import { dataSource } from './source.js';
 
 // 导入组件
 import Line from './components/line/index.vue';
 import Control from './components/control/index.vue';
 
 const scrollWrap = ref(null);// 获取当前滚动容器DOM对象
-const normalizeData = ref(initData(getAudioList()[0]));// 初始化数据
+let normalizeData = reactive(initData(getAudioList()[0]));// 初始化数据
+const setCurrentTime = ref(123);
 
 // 初始滚动位置的样式
 const initStyle = ref({
@@ -31,7 +31,11 @@ onMounted(() => {
 })
 
 function handleSelectAudio(audio){
-  normalizeData.value = initData(audio);
+  normalizeData = initData(audio);
+}
+
+function handleSelectLine(time){
+  setCurrentTime.value = time;
 }
 </script>
 
@@ -39,12 +43,20 @@ function handleSelectAudio(audio){
   <div class="scroll_wrap" ref="scrollWrap" @touchstart="handleTouchStart($event, translateStyle)"
     @touchmove="handleTouchMove($event, translateStyle)" @touchend="handleTouchEnd($event, translateStyle)">
     <ul class="scroll_inner" :style="[initStyle, translateStyle]">
-      <Line v-for="line in normalizeData" :key="line.start" :line="line" @handleLoop="handleLoop"
+      <Line
+        v-for="line in normalizeData"
+        :key="line.start"
+        :line="line"
+        @handleSelectLine="handleSelectLine"
+        @handleLoop="handleLoop"
         @handleShow="handleShow(normalizeData, $event)">
       </Line>
     </ul>
   </div>
-  <Control :normalizeData="normalizeData" @handleMode="handleMode"
+  <Control
+    :setCurrentTime="setCurrentTime"
+    :normalizeData="normalizeData"
+    @handleMode="handleMode"
     @handleRePlay="handleRePlay(normalizeData, translateStyle)"
     @handleTimeupdate="handleTimeupdate(normalizeData, translateStyle, $event)"
     @handleSelect="handleSelectAudio"></Control>
