@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { getAudioList } from '../../base';
+import Icon from '@/components/base/icon/index.vue';
 
 const emit = defineEmits(['handlePlay', 'handleRePlay', 'handleTimeupdate', 'handleSelect'])
 const props = defineProps({
@@ -14,10 +15,7 @@ const props = defineProps({
     }
 })
 watch(() => props.setCurrentTime, (newValue) => {
-    audio.value.currentTime = newValue;
-    if (!isPlay.value) {
-        controlPlay(true)
-    }
+    switchAudioTime(newValue, true);
 })
 
 const percent = ref(0); // 播放进度百分比
@@ -31,9 +29,51 @@ const isListShow = ref(false); // 是否显示音频列表
 const currentMode = ref(0); // 当前播放模式
 
 // 播放模式列表
-const PLAY_MODE = ['单曲', '顺序', '循环'];
+const PLAY_MODE = [{
+    label: '单曲',
+    icon: 'icon-danquxunhuan',
+}, {
+    label: '顺序',
+    icon: 'icon-shunxubofang',
+}, {
+    label: '循环',
+    icon: 'icon-liebiaoxunhuan'
+}, {
+    label: '随机',
+    icon: 'icon-suijibofang'
+}];
 const audioList = getAudioList();
 const initialAudio = audioList[0].imported.default; // 初始音频
+const curPlayInd = ref(0);
+
+/**
+ * 切换音频的方法，对应的会更新播放状态，更新对应滚动字幕 
+ * @param {Object} audio 音频对象 
+ * @param {Number} index 音频对象下标 
+ * @param {Boolean} isPlay 是否播放
+ */
+function switchAudio(index, isPlay=false){
+    if(index >= audioList.length || index < 0){
+        alert("无效的音频！");
+        return;
+    }
+    let audioObj = audioList[index];
+    curPlayInd.value = index;
+    emit('handleSelect', audioObj);
+    audio.value.src = audioObj.imported.default;
+    controlPlay(isPlay);
+}
+
+/**
+ * 切换目标播放时间
+ * @param {Number} time 目标播放时间 
+ * @param {Boolean} isPlay 是否播放 
+ */
+function switchAudioTime(time, isPlay=false){
+    emit('handleTimeupdate', time);
+    audio.value.currentTime = time;
+    controlPlay(isPlay);
+}
 
 /**
  * 控制音频的播放和暂停
@@ -85,12 +125,13 @@ function handlePlay() {
         controlPlay(true);
     }
 
-    emit('handlePlay', status)
+    emit('handlePlay', isPlay.value);
 }
 
 // 重播点击事件
 function handleReplay() {
-    audio.value.currentTime = 0;
+    // audio.value.currentTime = 0;
+    switchAudioTime(0, true);
     emit('handleRePlay')
 }
 
@@ -98,13 +139,24 @@ function handleReplay() {
 function handleEnded() {
     switch (currentMode.value) {
         case 0:
-            audio.value.currentTime = 0;
-            controlPlay(true);
+            switchAudioTime(0, true);
             break;
         case 1:
-            
+            if(curPlayInd.value !== audioList.length - 1){
+                switchAudio(++curPlayInd.value, true);
+            } else {
+                controlPlay(false);
+            }
+            break;
         case 2:
-
+            if (curPlayInd.value === audioList.length - 1) {
+                switchAudio(0, true);
+            } else {
+                switchAudio(++curPlayInd.value, true);
+            }
+            break;
+        case 3: 
+            // todo
         default:
 
     }
@@ -144,18 +196,16 @@ function handleControlPopup(value) {
  * 从音频列表中选择一项
  * @param {*} item 选中的音频对象
  */
-async function handleSelect(item) {
-    audio.value.src = item.imported.default;
-    emit('handleSelect', item);
+async function handleSelect(index) {
+    switchAudio(index, true);
     isListShow.value = false;
-    controlPlay(true);
 }
 
 /**
  * 切换模式点击事件
  */
-function handleMode(){
-    currentMode.value = (currentMode.value + 1) % 3;
+function handleMode() {
+    currentMode.value = (currentMode.value + 1) % 4;
 }
 
 /**
@@ -171,7 +221,7 @@ function handleTouchstartProgressBar(event) {
  * 拖动进度条事件
  * @param {*} event 事件对象 
  */
-function handleTouchmoveProgressBar(event){
+function handleTouchmoveProgressBar(event) {
     // console.log('event', event)
     // const touch = event.changeTouches[0];
     // console.log('touch', touch)
@@ -182,7 +232,7 @@ function handleTouchmoveProgressBar(event){
  * 进度条控制器
  * @param {*} event 事件对象 
  */
-function controlProgressBar(event){
+function controlProgressBar(event) {
     let playTime = 0;
     if (event.target.className === 'progress_bar_inner') {
         playTime = event.offsetX / event.target.parentNode.clientWidth * duration.value;
@@ -190,7 +240,7 @@ function controlProgressBar(event){
     if (event.target.className === 'progress_bar') {
         playTime = event.offsetX / event.target.clientWidth * duration.value;
     }
-    audio.value.currentTime = playTime;
+    switchAudioTime(playTime, true);
 }
 
 </script>
@@ -199,7 +249,7 @@ function controlProgressBar(event){
     <van-popup v-model:show="isListShow" position="right">
         <div class="list_wrap">
             <ul>
-                <li class="list_item" v-for="item in audioList" @click="handleSelect(item)">
+                <li class="list_item" v-for="(item, index) in audioList" @click="handleSelect(index)">
                     <div class="name">{{ item.name }}</div>
                 </li>
             </ul>
@@ -208,8 +258,7 @@ function controlProgressBar(event){
             </div>
         </div>
     </van-popup>
-    <audio :src="initialAudio" ref="audio" @ended="handleEnded" @timeupdate="handleTimeupdate"
-        @canplaythrough="handleCanplaythrough"></audio>
+    <audio :src="initialAudio" ref="audio" @ended="handleEnded" @timeupdate="handleTimeupdate" @canplaythrough="handleCanplaythrough"></audio>
     <div class="progress">
         <span>{{ formatShowTime(currentTime) }}</span>
         <div class="progress_bar" @click="handleTouchstartProgressBar" @touchmove="handleTouchmoveProgressBar">
@@ -218,11 +267,11 @@ function controlProgressBar(event){
         <span>{{ formatShowTime(duration) }}</span>
     </div>
     <div class="control">
-        <div class="playMode" @click="handleMode">{{ PLAY_MODE[currentMode] }}</div>
-        <div class="replayLine" :class="isFixLine ? 'light' : ''" @click="handleReplayLine">重行</div>
-        <div class="play" @click="handlePlay">{{ isPlay ? '暂停' : '播放' }}</div>
-        <div class="replay" @click="handleReplay">重播</div>
-        <div class="list" @click="handleControlPopup(true)">列表</div>
+        <Icon :name="PLAY_MODE[currentMode].icon" class="playMode icon" @click="handleMode"></Icon>
+        <Icon name="icon-CD" class="replayLine icon" :class="isFixLine ? 'light' : ''" @click="handleReplayLine"></Icon>
+        <Icon :name="isPlay ? 'icon-bofangzhong':'icon-zanting1'" class="play icon" @click="handlePlay"></Icon>
+        <Icon name="icon-kuaitui" class="replay icon" @click="handleReplay"></Icon>
+        <Icon name="icon-bofangduilie" class="list icon" @click="handleControlPopup(true)"></Icon>
     </div>
 </template>
 <style scoped lang="scss">
@@ -293,8 +342,11 @@ function controlProgressBar(event){
     display: flex;
     align-items: center;
     justify-content: space-around;
-
+    .icon {
+        font-size: 20px;
+    }
     .light {
         color: #66d9e8;
     }
-}</style>
+}
+</style>

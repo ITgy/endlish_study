@@ -2,8 +2,8 @@
 import { handleLoop, handleShow, handleTouchStart, handleTouchMove, handleTouchEnd } from './event';
 import { handleTimeupdate, handleRePlay, handleMode } from './event';
 import { computeScrollInnerInitTop, initData } from './base';
-import {reactive, ref, onMounted } from 'vue';
-import {getAudioList} from './base';
+import { reactive, ref, onMounted } from 'vue';
+import { getAudioList } from './base';
 
 // 导入组件
 import Line from './components/line/index.vue';
@@ -30,36 +30,29 @@ onMounted(() => {
   initStyle.value.top = computeScrollInnerInitTop(scrollWrapHeight);
 })
 
-function handleSelectAudio(audio){
+function handleSelectAudio(audio) {
   normalizeData = initData(audio);
 }
 
-function handleSelectLine(time){
+function handleSelectLine(time) {
   setCurrentTime.value = time;
 }
 </script>
 
 <template>
+  <!-- <van-nav-bar title="练听力" right-text="设置" /> -->
   <div class="scroll_wrap" ref="scrollWrap" @touchstart="handleTouchStart($event, translateStyle)"
     @touchmove="handleTouchMove($event, translateStyle)" @touchend="handleTouchEnd($event, translateStyle)">
     <ul class="scroll_inner" :style="[initStyle, translateStyle]">
-      <Line
-        v-for="line in normalizeData"
-        :key="line.start"
-        :line="line"
-        @handleSelectLine="handleSelectLine"
-        @handleLoop="handleLoop"
-        @handleShow="handleShow(normalizeData, $event)">
+      <Line v-for="line in normalizeData" :key="line.start" :line="line" @handleSelectLine="handleSelectLine"
+        @handleLoop="handleLoop" @handleShow="handleShow(normalizeData, $event)">
       </Line>
     </ul>
   </div>
-  <Control
-    :setCurrentTime="setCurrentTime"
-    :normalizeData="normalizeData"
-    @handleMode="handleMode"
+  <Control :setCurrentTime="setCurrentTime" :normalizeData="normalizeData" @handleMode="handleMode"
     @handleRePlay="handleRePlay(normalizeData, translateStyle)"
-    @handleTimeupdate="handleTimeupdate(normalizeData, translateStyle, $event)"
-    @handleSelect="handleSelectAudio"></Control>
+    @handleTimeupdate="handleTimeupdate(normalizeData, translateStyle, $event)" @handleSelect="handleSelectAudio">
+  </Control>
 </template>
 
 <style scoped lang="scss">
