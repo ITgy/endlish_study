@@ -27,7 +27,7 @@ export function initData(data) {
             ...item,
             light: false,
             loop: false,
-            show: true,
+            show: false,
             voice: false
         }
         if (index === 0) {

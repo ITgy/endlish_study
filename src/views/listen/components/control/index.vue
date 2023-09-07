@@ -343,7 +343,7 @@ function controlProgressBar(event) {
     align-items: center;
     justify-content: space-around;
     .icon {
-        font-size: 20px;
+        font-size: 25px;
     }
     .light {
         color: #66d9e8;

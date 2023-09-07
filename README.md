@@ -1,29 +1,34 @@
-# englist-study
+# 介绍
 
-This template should help get you started developing with Vue 3 in Vite.
+一个基于使用vue3开发的音乐学习webApp
 
-## Recommended IDE Setup
+## 功能描述
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+该webApp的功能分三大板块，分别是：
+- 背单词（待开发）
+- 练听力（开发中）
+- 做练习（待开发）
 
-## Customize configuration
+## 背单词 功能
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+等待开发中。。。。。。
 
-## Project Setup
+## 练听力 功能
 
-```sh
-npm install
-```
+开发中，目前完成功能：
+1. 英文字幕显示/隐藏功能——支持英文字幕意见显示/隐藏，支持单行字幕显示/隐藏，遇到听不懂的地方随时切换字幕显示状态
+2. 支持单句重播——听不懂？没关系，多听几遍
+3. 播放模式切换——随机、顺序、循环、单曲循环，看你喜欢，随便你选
+4. 字幕定位功能——点击字幕，播放进度立即定位到当前字幕播放的位置
 
-### Compile and Hot-Reload for Development
+带完成功能：
+1. 更舒服的字幕拖拽定位方式
+2. 播放模式、遮罩状态全局缓存
+3. 新增听写模式
+4. 新增听读模式
+5. 更舒服的进度条拖拽方式
+6. 。。。。。。
 
-```sh
-npm run dev
-```
+## 做练习 功能
 
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+等待开发中。。。。。。
