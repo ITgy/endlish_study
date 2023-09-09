@@ -42,26 +42,26 @@ export function initData(data) {
  * 根据当前时间计算文章滚动位置
  * @param {*} time 
  */
-export function locationArticle(normalizeData = [], time = 0){
+export function locationArticle(normalizeData = [], time = 0) {
     const curInd = normalizeData.findIndex(item => {
         return time >= item.value.start && time < item.value.end
     })
 
-    if(curInd !== -1){
+    if (curInd !== -1) {
         updateLightStatus(normalizeData, curInd)
         return LINE_HEIGHT * curInd;
     } else {
         return curInd;
-    }   
+    }
 }
 
 /**
  * 更新当前高亮行
  * @param {Number} curInx 当前行下标 
  */
-function updateLightStatus(normalizeData = [], curInd = 0){
+function updateLightStatus(normalizeData = [], curInd = 0) {
     normalizeData.forEach((item, index) => {
-        if(index === curInd){
+        if (index === curInd) {
             item.value.light = true;
         } else {
             item.value.light = false;
@@ -72,42 +72,43 @@ function updateLightStatus(normalizeData = [], curInd = 0){
 /**
  * 控制页面文章显示效果
  */
-export function controlArticleShow(normalizeData, translateStyle, time = 0){
+export function controlArticleShow(normalizeData, translateStyle, time = 0, recordTouchEndTop) {
     const transY = locationArticle(normalizeData, time)
-    if(transY !== -1){
-      translateStyle.transform = `translateY(${-transY}px)`;
+    if (transY !== -1) {
+        recordTouchEndTop.value = -transY;
+        translateStyle.transform = `translateY(${-transY}px)`;
     }
 }
 
 /**
  * 获取目录音频列表数据
  */
-export function getAudioList(){
+export function getAudioList() {
     const importAudios = import.meta.glob('../../static/**/*.mp3', {
         eager: true
     });
-    const importLrc = import.meta.glob('../../static/**/*.js',{
+    const importLrc = import.meta.glob('../../static/**/*.js', {
         eager: true
     });
 
     const audioList = Object.keys(importAudios).map(key => {
         let temp = key.split('/');
         return {
-            name: temp[temp.length-1].split('.')[0],
+            name: temp[temp.length - 1].split('.')[0],
             imported: importAudios[key]
         }
     })
     const lrcList = Object.keys(importLrc).map(key => {
         let temp = key.split('/');
         return {
-            name: temp[temp.length-1].split('.')[0],
+            name: temp[temp.length - 1].split('.')[0],
             imported: importLrc[key]
         }
     })
-    
-    for(let audio of audioList){
-        for(let lrc of lrcList){
-            if(audio.name === lrc.name){
+
+    for (let audio of audioList) {
+        for (let lrc of lrcList) {
+            if (audio.name === lrc.name) {
                 audio.article = lrc.imported;
             }
         }

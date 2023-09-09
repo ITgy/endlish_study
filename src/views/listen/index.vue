@@ -1,6 +1,6 @@
 <script setup>
-import { handleLoop, handleShow, handleTouchStart, handleTouchMove, handleTouchEnd } from './event';
-import { handleTimeupdate, handleRePlay, handleMode } from './event';
+import { handleShow, handleTouchStart, handleTouchMove, handleTouchEnd } from './event';
+import { handleTimeupdate } from './event';
 import { computeScrollInnerInitTop, initData } from './base';
 import { reactive, ref, onMounted } from 'vue';
 import { getAudioList } from './base';
@@ -12,7 +12,7 @@ import Line from './components/line/index.vue';
 import Control from './components/control/index.vue';
 
 const scrollWrap = ref(null);// 获取当前滚动容器DOM对象
-const normalizeData = reactive(initData(getAudioList()[0]));// 初始化数据
+let normalizeData = reactive(initData(getAudioList()[0]));// 初始化数据
 const setCurrentTime = ref(0);
 const showSet = ref(false);
 
@@ -45,16 +45,12 @@ function handleSelectLine(time) {
 }
 
 function handleRightClick() {
-  console.log('点击了设置')
   showSet.value = true;
 }
 function handleSwitch(type, value){
-  console.log(type, value)
   switch(type){
     case 'listenMask':
-      console.log(normalizeData);
       normalizeData.forEach(item => {
-        console.log(item);
         item.value.show = !value;
       })
       break;
@@ -103,12 +99,11 @@ function handleSwitch(type, value){
     @touchmove="handleTouchMove($event, translateStyle)" @touchend="handleTouchEnd($event, translateStyle)">
     <ul class="scroll_inner" :style="[initStyle, translateStyle]">
       <Line v-for="line in normalizeData" :key="line.start" :line="line" @handleSelectLine="handleSelectLine"
-        @handleLoop="handleLoop" @handleShow="handleShow(normalizeData, $event)">
+        @handleShow="handleShow(normalizeData, $event)">
       </Line>
     </ul>
   </div>
-  <Control :setCurrentTime="setCurrentTime" :normalizeData="normalizeData" @handleMode="handleMode"
-    @handleRePlay="handleRePlay(normalizeData, translateStyle)"
+  <Control :setCurrentTime="setCurrentTime" :normalizeData="normalizeData"
     @handleTimeupdate="handleTimeupdate(normalizeData, translateStyle, $event)" @handleSelect="handleSelectAudio">
   </Control>
 </template>

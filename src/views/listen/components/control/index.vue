@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { getAudioList } from '../../base';
 import Icon from '@/components/base/icon/index.vue';
+import {getRandom} from '@/utils/base.js';
 
 const emit = defineEmits(['handlePlay', 'handleRePlay', 'handleTimeupdate', 'handleSelect'])
 const props = defineProps({
@@ -26,7 +27,6 @@ const duration = ref(0); // 音频总时长
 const currentTime = ref(0); // 播放进度倒计时
 const currentPlayLine = ref({}); // 当前播放的行
 const isListShow = ref(false); // 是否显示音频列表
-const currentMode = ref(0); // 当前播放模式
 
 // 播放模式列表
 const PLAY_MODE = [{
@@ -42,6 +42,24 @@ const PLAY_MODE = [{
     label: '随机',
     icon: 'icon-suijibofang'
 }];
+const currentMode = ref(0); // 当前播放模式
+
+// 播放速率
+const PLAY_RATE = [{
+    label: '0.5x',
+    rate: 0.5
+}, {
+    label: '1x',
+    rate: 1
+}, {
+    label: '1.5x',
+    rate: 1.5
+}, {
+    label: '2x',
+    rate: 2
+}]
+const currentRate = ref(1); // 当前播放模式
+
 const audioList = getAudioList();
 const initialAudio = audioList[0].imported.default; // 初始音频
 const curPlayInd = ref(0);
@@ -52,8 +70,8 @@ const curPlayInd = ref(0);
  * @param {Number} index 音频对象下标 
  * @param {Boolean} isPlay 是否播放
  */
-function switchAudio(index, isPlay=false){
-    if(index >= audioList.length || index < 0){
+function switchAudio(index, isPlay = false) {
+    if (index >= audioList.length || index < 0) {
         alert("无效的音频！");
         return;
     }
@@ -69,7 +87,7 @@ function switchAudio(index, isPlay=false){
  * @param {Number} time 目标播放时间 
  * @param {Boolean} isPlay 是否播放 
  */
-function switchAudioTime(time, isPlay=false){
+function switchAudioTime(time, isPlay = false) {
     emit('handleTimeupdate', time);
     audio.value.currentTime = time;
     controlPlay(isPlay);
@@ -129,10 +147,12 @@ function handlePlay() {
 }
 
 // 重播点击事件
-function handleReplay() {
-    // audio.value.currentTime = 0;
-    switchAudioTime(0, true);
-    emit('handleRePlay')
+function handleSetRate() {
+    // switchAudioTime(0, true);
+    // emit('handleRePlay')
+    // audio.value.playbackRate = 2;
+    currentRate.value = (currentRate.value + 1) % 4;
+    audio.value.playbackRate = PLAY_RATE[currentRate.value].rate;
 }
 
 // 播放结束触发事件
@@ -142,7 +162,7 @@ function handleEnded() {
             switchAudioTime(0, true);
             break;
         case 1:
-            if(curPlayInd.value !== audioList.length - 1){
+            if (curPlayInd.value !== audioList.length - 1) {
                 switchAudio(++curPlayInd.value, true);
             } else {
                 controlPlay(false);
@@ -155,8 +175,10 @@ function handleEnded() {
                 switchAudio(++curPlayInd.value, true);
             }
             break;
-        case 3: 
-            // todo
+        case 3:
+            curPlayInd.value = getRandom(0, audioList.length);
+            switchAudio(curPlayInd.value, true);
+            break;
         default:
 
     }
@@ -258,7 +280,8 @@ function controlProgressBar(event) {
             </div>
         </div>
     </van-popup>
-    <audio :src="initialAudio" ref="audio" @ended="handleEnded" @timeupdate="handleTimeupdate" @canplaythrough="handleCanplaythrough"></audio>
+    <audio :src="initialAudio" ref="audio" @ended="handleEnded" @timeupdate="handleTimeupdate"
+        @canplaythrough="handleCanplaythrough"></audio>
     <div class="progress">
         <span>{{ formatShowTime(currentTime) }}</span>
         <div class="progress_bar" @click="handleTouchstartProgressBar" @touchmove="handleTouchmoveProgressBar">
@@ -269,8 +292,9 @@ function controlProgressBar(event) {
     <div class="control">
         <Icon :name="PLAY_MODE[currentMode].icon" class="playMode icon" @click="handleMode"></Icon>
         <Icon name="icon-CD" class="replayLine icon" :class="isFixLine ? 'light' : ''" @click="handleReplayLine"></Icon>
-        <Icon :name="isPlay ? 'icon-bofangzhong':'icon-zanting1'" class="play icon" @click="handlePlay"></Icon>
-        <Icon name="icon-kuaitui" class="replay icon" @click="handleReplay"></Icon>
+        <Icon :name="isPlay ? 'icon-bofangzhong' : 'icon-zanting1'" class="play icon" @click="handlePlay"></Icon>
+        <!-- <Icon name="icon-kuaitui" class="replay icon" @click="handleSetRate"></Icon> -->
+        <div @click="handleSetRate" class="rate">{{ PLAY_RATE[currentRate].label }}</div>
         <Icon name="icon-bofangduilie" class="list icon" @click="handleControlPopup(true)"></Icon>
     </div>
 </template>
@@ -342,11 +366,19 @@ function controlProgressBar(event) {
     display: flex;
     align-items: center;
     justify-content: space-around;
+
+    .rate {
+        width: 36px;
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+    }
+
     .icon {
         font-size: 25px;
     }
+
     .light {
         color: #66d9e8;
     }
-}
-</style>
+}</style>

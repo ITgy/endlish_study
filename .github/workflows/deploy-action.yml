@@ -1,0 +1,30 @@
+name: build and deploy english_project
+run-name: ${{github.actor}} is build and deploy english_project
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    steps:
+      - name: 获取源码
+        uses: actions/checkout@v3
+      - name: Node环境版本
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: 安装Pnpm
+        run: npm install -g pnpm
+      - name: 安装依赖
+        run: pnpm install
+      - name: 打包
+        run: |
+          npm run build
+      - name: 部署
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN)}}
+          publish_dir: ./out
